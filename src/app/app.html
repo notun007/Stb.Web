@@ -1,0 +1,183 @@
+<main class="shell">
+  <aside class="sidebar" aria-label="Application navigation">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 6.5 12 3l8 3.5v7.2c0 4.1-3.2 6.6-8 7.3-4.8-.7-8-3.2-8-7.3V6.5Z" />
+          <path d="M8 11h8M8 14h5" />
+        </svg>
+      </div>
+      <div>
+        <h1>Stb.Web</h1>
+        <span>SV CAS Integration Hub</span>
+      </div>
+    </div>
+
+    <nav class="nav-list">
+      <a class="nav-item dashboard-link" href="#dashboard">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 13h6V5H4v8Zm10 6h6V5h-6v14ZM4 19h6v-3H4v3Z" />
+          </svg>
+        </span>
+        <span>Dashboard</span>
+      </a>
+
+      @for (endpoint of endpoints; track trackEndpoint($index, endpoint)) {
+        <button
+          type="button"
+          class="nav-item"
+          [class.active]="selectedKey() === endpoint.key"
+          (click)="selectEndpoint(endpoint.key)"
+        >
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M7 8h10M7 12h10M7 16h6" />
+              <path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" />
+            </svg>
+          </span>
+          <span>{{ endpoint.label }}</span>
+        </button>
+      }
+    </nav>
+  </aside>
+
+  <section class="workspace">
+    <header class="topbar" id="dashboard">
+      <div>
+        <p class="section-label">SV CAS command center</p>
+        <h2>Dashboard</h2>
+      </div>
+      <div class="connection">
+        <span class="pulse"></span>
+        <span>API target</span>
+        <strong>{{ apiTarget }}</strong>
+      </div>
+    </header>
+
+    <section class="metrics" aria-label="Service summary">
+      <article class="metric">
+        <span>Endpoints</span>
+        <strong>{{ endpoints.length }}</strong>
+        <small>Sync, open, close, auth, delete, clear, status, query</small>
+      </article>
+      <article class="metric">
+        <span>Success</span>
+        <strong>{{ successCount() }}</strong>
+        <small>Current browser session</small>
+      </article>
+      <article class="metric">
+        <span>Attention</span>
+        <strong>{{ failedCount() }}</strong>
+        <small>Failed or rejected commands</small>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <section class="command-panel" aria-labelledby="command-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">{{ selectedEndpoint().method }} {{ selectedEndpoint().path }}</p>
+            <h3 id="command-title">{{ selectedEndpoint().label }}</h3>
+          </div>
+          <span class="method">{{ selectedEndpoint().method }}</span>
+        </div>
+
+        <p class="description">{{ selectedEndpoint().description }}</p>
+
+        <form class="command-form" (ngSubmit)="sendCommand()">
+          @for (field of selectedEndpoint().fields; track field.name) {
+            <label class="field">
+              <span>{{ field.label }}</span>
+              @if (field.type === 'select') {
+                <select
+                  [name]="field.name"
+                  [value]="form()[field.name]"
+                  (change)="updateField(field.name, $any($event.target).value)"
+                >
+                  @for (option of field.options ?? []; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                  }
+                </select>
+              } @else {
+                <input
+                  [type]="field.type ?? 'text'"
+                  [name]="field.name"
+                  [placeholder]="field.placeholder"
+                  [value]="form()[field.name]"
+                  (input)="updateField(field.name, $any($event.target).value)"
+                  autocomplete="off"
+                />
+              }
+              <small>{{ field.hint }}</small>
+            </label>
+          }
+
+          <button class="send-button" type="submit" [disabled]="loading()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m5 12 14-7-4 14-3-5-7-2Z" />
+            </svg>
+            <span>{{ loading() ? 'Sending...' : 'Send Command' }}</span>
+          </button>
+        </form>
+      </section>
+
+      <section class="inspector" aria-label="Request and response inspector">
+        <div class="tabs">
+          <span class="tab active">Request</span>
+          <span class="tab">Response</span>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title">
+            <span>Request</span>
+            <strong>{{ selectedEndpoint().path }}</strong>
+          </div>
+          <pre>{{ formatJson(requestPreview()) }}</pre>
+        </div>
+
+        <div class="code-block response-block" [class.empty]="!response() && !error()">
+          <div class="code-title">
+            <span>Response</span>
+            @if (error()) {
+              <strong class="bad">Error</strong>
+            } @else if (response()) {
+              <strong class="good">Received</strong>
+            } @else {
+              <strong>Waiting</strong>
+            }
+          </div>
+          <pre>{{ error() || (response() ? formatJson(response()) : 'Send a command to inspect the SV CAS response.') }}</pre>
+        </div>
+      </section>
+    </section>
+
+    <section class="activity-panel" aria-label="Recent activity">
+      <div class="panel-heading compact">
+        <div>
+          <p class="section-label">Recent activity</p>
+          <h3>Command History</h3>
+        </div>
+      </div>
+
+      <div class="activity-table">
+        <div class="activity-row header">
+          <span>Time</span>
+          <span>Endpoint</span>
+          <span>Status</span>
+          <span>Result</span>
+        </div>
+        @for (item of activity(); track trackActivity($index, item)) {
+          <div class="activity-row">
+            <span>{{ item.time }}</span>
+            <span>{{ item.endpoint }}</span>
+            <span class="status" [class.success]="item.status === 'Success'" [class.failed]="item.status !== 'Success'">
+              {{ item.status }}
+            </span>
+            <span>{{ item.result }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  </section>
+</main>
