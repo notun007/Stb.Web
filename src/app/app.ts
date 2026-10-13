@@ -8,11 +8,11 @@ type EndpointKey =
   | 'StbSyncToSvCas'
   | 'OpenAccount'
   | 'CloseAccount'
-  | 'Authorization'
-  | 'UnAuthorizationDeleteAuthorization'
-  | 'ClearAuthorizationOfTerminal'
+  | 'Authorize'
+  | 'UnAuthorize'
+  | 'ClearAuthorization'
   | 'SetTerminalUnactivatedStatus'
-  | 'QueryAuthorizationOfCertainTerminal';
+  | 'QueryAuthorization';
 
 type FieldName = 'cardId' | 'chipId' | 'productId' | 'startTime' | 'endTime';
 type FieldType = 'text' | 'select' | 'datetime-local';
@@ -112,11 +112,11 @@ export class App {
       fields: [this.cardIdField()]
     },
     {
-      key: 'Authorization',
-      label: 'Authorization',
+      key: 'Authorize',
+      label: 'Authorize',
       description: 'Send product authorization with dynamic product, start time, and end time.',
       method: 'POST',
-      path: '/Authorization',
+      path: '/Authorize',
       fields: [
         this.cardIdField(),
         {
@@ -144,11 +144,11 @@ export class App {
       ]
     },
     {
-      key: 'UnAuthorizationDeleteAuthorization',
-      label: 'Delete Authorization',
+      key: 'UnAuthorize',
+      label: 'UnAuthorize',
       description: 'Delete product authorization by product and authorization period.',
       method: 'POST',
-      path: '/UnAuthorizationDeleteAuthorization',
+      path: '/UnAuthorize',
       fields: [
         this.cardIdField(),
         {
@@ -176,11 +176,11 @@ export class App {
       ]
     },
     {
-      key: 'ClearAuthorizationOfTerminal',
+      key: 'ClearAuthorization',
       label: 'Clear Authorization',
       description: 'Clear all authorizations from a terminal using HSCAS manual section 4.4.',
       method: 'POST',
-      path: '/ClearAuthorizationOfTerminal',
+      path: '/ClearAuthorization',
       fields: [this.cardIdField()]
     },
     {
@@ -192,11 +192,11 @@ export class App {
       fields: [this.cardIdField()]
     },
     {
-      key: 'QueryAuthorizationOfCertainTerminal',
+      key: 'QueryAuthorization',
       label: 'Query Authorization',
       description: 'Read current authorization records for a terminal.',
       method: 'POST',
-      path: '/QueryAuthorizationOfCertainTerminal',
+      path: '/QueryAuthorization',
       fields: [this.cardIdField()]
     }
   ];
