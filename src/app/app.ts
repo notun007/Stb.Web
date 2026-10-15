@@ -11,10 +11,10 @@ type EndpointKey =
   | 'Authorize'
   | 'UnAuthorize'
   | 'ClearAuthorization'
-  | 'SetTerminalUnactivatedStatus'
+  | 'SetTerminalStatus'
   | 'QueryAuthorization';
 
-type FieldName = 'cardId' | 'chipId' | 'productId' | 'startTime' | 'endTime';
+type FieldName = 'status' | 'cardId' | 'chipId' | 'productId' | 'startTime' | 'endTime';
 type FieldType = 'text' | 'select' | 'datetime-local';
 
 interface ProductOption {
@@ -184,12 +184,25 @@ export class App {
       fields: [this.cardIdField()]
     },
     {
-      key: 'SetTerminalUnactivatedStatus',
-      label: 'Set Unactivated',
-      description: 'Set a terminal to unactivated status using HSCAS manual section 4.9.3.1.',
+      key: 'SetTerminalStatus',
+      label: 'Set Terminal Status',
+      description: 'Activate or inactivate a terminal using HSCAS manual section 4.9.',
       method: 'POST',
-      path: '/SetTerminalUnactivatedStatus',
-      fields: [this.cardIdField()]
+      path: '/SetTerminalStatus',
+      fields: [
+        this.cardIdField(),
+        {
+          name: 'status',
+          label: 'Terminal Status',
+          placeholder: '',
+          hint: 'Choose Inactivate (0) or Activate (1).',
+          type: 'select',
+          options: [
+            { value: '0', label: 'Inactivate' },
+            { value: '1', label: 'Activate' }
+          ]
+        }
+      ]
     },
     {
       key: 'QueryAuthorization',
@@ -205,6 +218,7 @@ export class App {
   protected readonly form = signal<Record<string, string>>({
     cardId: '3120913711',
     chipId: '123456789',
+    status: '0',
     productId: '0x0101',
     startTime: this.formatDateTimeLocal(new Date()),
     endTime: this.formatDateTimeLocal(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000))
@@ -296,9 +310,12 @@ export class App {
     return `${item.time}-${item.endpoint}-${item.result}`;
   }
 
-  private buildPayload(endpoint: EndpointDefinition): Record<string, string> {
-    return endpoint.fields.reduce<Record<string, string>>((payload, field) => {
-      payload[field.name] = this.normalizePayloadValue(field, this.form()[field.name] ?? '');
+  private buildPayload(endpoint: EndpointDefinition): Record<string, string | number> {
+    return endpoint.fields.reduce<Record<string, string | number>>((payload, field) => {
+      const value = this.form()[field.name] ?? '';
+      payload[field.name] = field.name === 'status'
+        ? Number(value)
+        : this.normalizePayloadValue(field, value);
       return payload;
     }, {});
   }
