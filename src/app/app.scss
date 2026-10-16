@@ -530,9 +530,9 @@ pre {
   background: transparent; color: #b8f1ef; font: inherit; font-size: 12px;
   cursor: pointer; transition: color .15s, filter .15s, transform .15s;
   svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; }
-  &:hover:not(:disabled) { color: #ffd166; filter: drop-shadow(0 0 5px #ffd16680); transform: translateY(-1px); }
+  &:hover:not(:disabled) { color: #22d3ee; filter: drop-shadow(0 0 5px #22d3ee80); transform: translateY(-1px); }
   &:active:not(:disabled) { color: #a78bfa; transform: scale(.92); }
-  &.copied:not(:disabled) { color: #5fffb0; filter: drop-shadow(0 0 5px #5fffb080); }
+  &.copied:not(:disabled) { color: #f472b6; filter: drop-shadow(0 0 5px #f472b680); }
   &:focus-visible { outline: 2px solid #a7f3d0; outline-offset: 3px; }
   &:disabled { opacity: .4; cursor: default; }
 }
