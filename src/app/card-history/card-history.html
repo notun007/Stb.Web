@@ -1,0 +1,70 @@
+<section class="history-panel" aria-labelledby="card-history-title" [attr.aria-busy]="loading()">
+  <header class="history-heading">
+    <div>
+      <p class="eyebrow">Saved operations · all operation types</p>
+      <h3 id="card-history-title">Card History</h3>
+      <p class="subtitle">{{ validCard() ? 'Card ' + cardId.trim() : 'Enter a valid Card ID to view its history.' }}</p>
+    </div>
+    <button type="button" (click)="load()" [disabled]="loading() || !validCard()">Refresh history</button>
+  </header>
+  <p class="note">Newest Created Date first. Successful CAS operations only. Created dates use the database server’s clock; authorization periods use Bangladesh time.</p>
+  <div aria-live="polite">
+    @if (loading()) {
+      <p class="state">Loading card history…</p>
+    } @else if (error()) {
+      <p class="state error" role="alert">{{ error() }}</p>
+    } @else if (validCard() && rows().length === 0) {
+      <p class="state">No saved operations found for this card.</p>
+    }
+  </div>
+  @if (rows().length > 0) {
+    <div class="table-scroll" tabindex="0" aria-label="Card operation history">
+      <table>
+        <thead><tr><th aria-sort="descending">Created Date (server time) ↓</th><th>Operation</th><th>Product</th><th>Authorization period (BDT)</th><th>Created by</th><th>Details</th></tr></thead>
+        <tbody>
+          @for (row of rows(); track row.id) {
+            <tr [class.selected]="selectedId() === row.id">
+              <td class="nowrap created-date" data-label="Created Date">{{ recordedAt(row.createdDate) }}</td>
+              <td data-label="Operation"><span class="operation">{{ row.statusName }}</span></td>
+              <td data-label="Product">{{ row.productId ?? '—' }}</td>
+              <td class="period" data-label="Period (BDT)"><span>{{ authorizationTime(row.startTime) }}</span>@if (row.endTime) { <small class="end-date">{{ authorizationTime(row.endTime) }}</small> }</td>
+              <td data-label="Created by">{{ row.createdBy }}</td>
+              <td data-label="Details"><button type="button" (click)="openDetails(row)" [attr.aria-label]="'View operation ' + row.id">View</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <nav class="pagination" aria-label="Card history pagination">
+      <span>{{ total() }} saved operations · Page {{ page() }} of {{ totalPages() }}</span>
+      <div><button type="button" (click)="load(page() - 1)" [disabled]="page() <= 1 || loading()">Previous</button><button type="button" (click)="load(page() + 1)" [disabled]="page() >= totalPages() || loading()">Next</button></div>
+    </nav>
+  }
+  <dialog #detailsDialog class="details-dialog" aria-labelledby="saved-details-title"
+    (cancel)="$event.preventDefault(); closeDetails()" (click)="dismissBackdrop($event)" (keydown)="trapFocus($event)">
+    <div class="modal-shell">
+      <header class="modal-heading">
+        <div class="modal-title">
+          <span class="detail-icon" aria-hidden="true">&#123; &#125;</span>
+          <div><p class="eyebrow">Card operation details</p><h4 id="saved-details-title">Saved operation #{{ selectedId() }}</h4></div>
+        </div>
+        <button type="button" class="modal-close" (click)="closeDetails()" autofocus>Close details <span aria-hidden="true">×</span></button>
+      </header>
+      <div class="modal-content" [attr.aria-busy]="detailLoading()">
+        @if (detailLoading()) { <p class="state" aria-live="polite">Loading saved details…</p> }
+        @if (detailError()) { <p class="state error" role="alert">{{ detailError() }}</p> }
+        @if (detail(); as saved) {
+          <div class="saved-meta">
+            <div><span>Card ID</span><strong>{{ saved.cardId }}</strong></div>
+            <div><span>Operation</span><strong>{{ saved.statusName }}</strong></div>
+            <div><span>Chip ID</span><strong>{{ saved.chipId ?? 'Not recorded' }}</strong></div>
+          </div>
+          <h5>Request hex</h5><pre tabindex="0">{{ saved.requestHex || 'Not recorded for this operation.' }}</pre>
+          <h5>Response hex</h5><pre tabindex="0">{{ saved.responseHex || 'Not recorded for this operation.' }}</pre>
+          <h5>Response JSON</h5><pre tabindex="0">{{ formattedResponse(saved.responseJson) }}</pre>
+        }
+      </div>
+      <footer class="modal-footer">Saved database record · Press Escape or click outside to close</footer>
+    </div>
+  </dialog>
+</section>

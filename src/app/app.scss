@@ -505,3 +505,19 @@ pre {
     grid-column: 2;
   }
 }
+
+/* Distinct decorative icons keep actions recognizable without relying on color alone. */
+.nav-icon { flex-shrink: 0; border-radius: 8px; background: var(--nav-icon-bg); color: var(--nav-icon-color, #8ed8e4); }
+.nav-icon svg { width: 19px; height: 19px; stroke-width: 1.8; }
+.nav-icon[data-icon="Dashboard"] { --nav-icon-color: #7dd3fc; --nav-icon-bg: #38bdf81c; }
+.nav-icon[data-icon="OpenAccount"] { --nav-icon-color: #6ee7b7; --nav-icon-bg: #34d3991c; }
+.nav-icon[data-icon="CloseAccount"] { --nav-icon-color: #fda4af; --nav-icon-bg: #fb71851c; }
+.nav-icon[data-icon="Authorize"] { --nav-icon-color: #67e8f9; --nav-icon-bg: #22d3ee1c; }
+.nav-icon[data-icon="UnAuthorize"] { --nav-icon-color: #fcd34d; --nav-icon-bg: #fbbf241c; }
+.nav-icon[data-icon="ClearAuthorization"] { --nav-icon-color: #c4b5fd; --nav-icon-bg: #a78bfa1c; }
+.nav-icon[data-icon="SetTerminalStatus"] { --nav-icon-color: #fdba74; --nav-icon-bg: #fb923c1c; }
+.nav-icon[data-icon="QueryAuthorization"] { --nav-icon-color: #a5b4fc; --nav-icon-bg: #818cf81c; }
+.brand-mark { flex: 0 0 46px; width: 46px; height: 46px; border-radius: 13px; background: linear-gradient(140deg, #0da7a0, #3064b8); border: 1px solid #75e4ef45; box-shadow: 0 6px 20px #00141e33, inset 0 1px 0 #ffffff30; }
+.brand-mark svg { width: 38px; height: 38px; }
+.brand h1 { font-size: 23px; line-height: 1.15; letter-spacing: .2px; }
+.brand h1 .brand-name { display: block; margin-top: 4px; color: #e9f7fa; font-size: 15px; font-weight: 600; letter-spacing: .1px; }

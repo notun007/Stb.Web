@@ -2,10 +2,10 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CardHistory } from './card-history/card-history';
 import { environment } from '../environments/environment';
 
 type EndpointKey =
-  | 'StbSyncToSvCas'
   | 'OpenAccount'
   | 'CloseAccount'
   | 'Authorize'
@@ -47,7 +47,7 @@ interface ActivityItem {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CardHistory],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -61,27 +61,6 @@ export class App {
   ];
 
   protected readonly endpoints: EndpointDefinition[] = [
-    {
-      key: 'StbSyncToSvCas',
-      label: 'STB Sync to SV CAS',
-      description: 'Synchronize an STB terminal record to SV CAS with card id and chip id.',
-      method: 'POST',
-      path: '/StbSyncToSvCas',
-      fields: [
-        {
-          name: 'cardId',
-          label: 'Card ID',
-          placeholder: '3120913711',
-          hint: 'Decimal string used to identify the STB terminal.'
-        },
-        {
-          name: 'chipId',
-          label: 'Chip ID',
-          placeholder: '123456789',
-          hint: 'Decimal or hex string used by the SV CAS sync command.'
-        }
-      ]
-    },
     {
       key: 'OpenAccount',
       label: 'Open Account',
@@ -214,7 +193,7 @@ export class App {
     }
   ];
 
-  protected readonly selectedKey = signal<EndpointKey>('StbSyncToSvCas');
+  protected readonly selectedKey = signal<EndpointKey | 'Dashboard'>('Dashboard');
   protected readonly form = signal<Record<string, string>>({
     cardId: '3120913711',
     chipId: '123456789',
@@ -223,6 +202,7 @@ export class App {
     startTime: this.formatDateTimeLocal(new Date()),
     endTime: this.formatDateTimeLocal(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000))
   });
+  protected readonly historyRefresh = signal(0);
   protected readonly response = signal<unknown>(null);
   protected readonly error = signal<string>('');
   protected readonly loading = signal(false);
@@ -265,7 +245,7 @@ export class App {
 
   constructor(private readonly http: HttpClient) {}
 
-  protected selectEndpoint(key: EndpointKey): void {
+  protected selectEndpoint(key: EndpointKey | 'Dashboard'): void {
     this.selectedKey.set(key);
     this.response.set(null);
     this.error.set('');
@@ -276,6 +256,7 @@ export class App {
   }
 
   protected sendCommand(): void {
+    if (this.selectedKey() === 'Dashboard') return;
     const endpoint = this.selectedEndpoint();
     const payload = this.buildPayload(endpoint);
 
@@ -287,6 +268,10 @@ export class App {
       next: (result: unknown) => {
         this.loading.set(false);
         this.response.set(result);
+        if (this.isRecord(result) && result['success'] === true &&
+            String(payload['cardId']).trim() === this.form()['cardId'].trim()) {
+          this.historyRefresh.update(value => value + 1);
+        }
         this.pushActivity(endpoint.label, this.resultStatus(result), this.resultSummary(result));
       },
       error: (failure: HttpErrorResponse) => {
