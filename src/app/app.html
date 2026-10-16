@@ -155,7 +155,12 @@
         <div class="code-block">
           <div class="code-title">
             <span>Request</span>
-            <strong>{{ selectedEndpoint().path }}</strong>
+            <div class="code-actions">
+              <strong>{{ selectedEndpoint().path }}</strong>
+              <button type="button" class="copy-button" [class.copied]="copyFeedback()['request'] === 'Copied!'" (click)="copyPanel('request')" aria-label="Copy request" [title]="copyFeedback()['request'] || 'Copy request'">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
+              </button>
+            </div>
           </div>
           <pre>{{ formatJson(requestPreview()) }}</pre>
         </div>
@@ -163,6 +168,7 @@
         <div class="code-block response-block" [class.empty]="!response() && !error()">
           <div class="code-title">
             <span>Response</span>
+            <div class="code-actions">
             @if (error()) {
               <strong class="bad">Error</strong>
             } @else if (response()) {
@@ -170,9 +176,14 @@
             } @else {
               <strong>Waiting</strong>
             }
+              <button type="button" class="copy-button" [class.copied]="copyFeedback()['response'] === 'Copied!'" (click)="copyPanel('response')" [disabled]="!response() && !error()" aria-label="Copy response" [title]="copyFeedback()['response'] || 'Copy response'">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
+              </button>
+            </div>
           </div>
           <pre>{{ error() || (response() ? formatJson(response()) : 'Send a command to inspect the SV CAS response.') }}</pre>
         </div>
+        <span class="copy-announcement" role="status" aria-live="polite">{{ copyFeedback()['request'] || copyFeedback()['response'] }}</span>
       </section>
     </section>
 

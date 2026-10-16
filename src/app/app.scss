@@ -523,3 +523,17 @@ pre {
 .brand h1 .brand-name { display: block; margin-top: 4px; color: #e9f7fa; font-size: 15px; font-weight: 600; letter-spacing: .1px; }
 .brand-mark { background: radial-gradient(circle at 25% 15%, #2b96ae, #175482 65%, #283768); border-color: #9ce4ff55; box-shadow: 0 5px 18px #00182766, inset 0 1px 0 #c0f7ff50; }
 .brand-mark svg { width: 43px; height: 43px; }
+.code-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-width: 0; flex-wrap: wrap; }
+.copy-button {
+  display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+  padding: 7px 10px; border: 0; border-radius: 4px;
+  background: transparent; color: #b8f1ef; font: inherit; font-size: 12px;
+  cursor: pointer; transition: color .15s, filter .15s, transform .15s;
+  svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+  &:hover:not(:disabled) { color: #ffd166; filter: drop-shadow(0 0 5px #ffd16680); transform: translateY(-1px); }
+  &:active:not(:disabled) { color: #a78bfa; transform: scale(.92); }
+  &.copied:not(:disabled) { color: #5fffb0; filter: drop-shadow(0 0 5px #5fffb080); }
+  &:focus-visible { outline: 2px solid #a7f3d0; outline-offset: 3px; }
+  &:disabled { opacity: .4; cursor: default; }
+}
+.copy-announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

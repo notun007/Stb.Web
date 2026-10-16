@@ -283,6 +283,38 @@ export class App {
     });
   }
 
+  protected readonly copyFeedback = signal<Record<string, string>>({});
+
+  protected async copyPanel(panel: 'request' | 'response'): Promise<void> {
+    const text = panel === 'request'
+      ? this.formatJson(this.requestPreview())
+      : this.error() || (this.response() ? this.formatJson(this.response()) : '');
+    if (!text) return;
+    let copied = false;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      }
+    } catch { /* HTTP hosting or denied clipboard permission: use the fallback below. */ }
+    if (!copied) {
+      const focused = document.activeElement as HTMLElement | null;
+      const field = document.createElement('textarea');
+      field.value = text;
+      field.setAttribute('readonly', '');
+      field.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(field);
+      try {
+        field.select();
+        copied = document.execCommand('copy');
+      } catch { copied = false; }
+      finally { field.remove(); focused?.focus({ preventScroll: true }); }
+    }
+    const message = copied ? 'Copied!' : 'Copy failed';
+    this.copyFeedback.update(state => ({ ...state, [panel]: message }));
+    setTimeout(() => this.copyFeedback.update(state => ({ ...state, [panel]: '' })), 2000);
+  }
+
   protected formatJson(value: unknown): string {
     return JSON.stringify(value, null, 2);
   }
