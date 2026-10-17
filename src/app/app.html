@@ -30,7 +30,7 @@
         <span>Dashboard</span>
       </button>
 
-      @for (endpoint of endpoints; track trackEndpoint($index, endpoint)) {
+      @for (endpoint of menuEndpoints; track trackEndpoint($index, endpoint)) {
         <button
           type="button"
           class="nav-item"
@@ -138,7 +138,6 @@
                   autocomplete="off"
                 />
               }
-              <small>{{ field.hint }}</small>
             </label>
           }
           <button class="send-button" type="submit" [disabled]="loading()">

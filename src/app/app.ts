@@ -32,7 +32,6 @@ interface EndpointDefinition {
     name: FieldName;
     label: string;
     placeholder: string;
-    hint: string;
     type?: FieldType;
     options?: ProductOption[];
   }>;
@@ -72,13 +71,11 @@ export class App {
           name: 'cardId',
           label: 'Card ID',
           placeholder: '3120913711',
-          hint: 'Decimal string. Valid HSCAS range starts at 2147483648.'
         },
         {
           name: 'chipId',
           label: 'Chip ID',
           placeholder: '123456789',
-          hint: 'Decimal or hex string. The API converts it to 8-byte HSCAS hex.'
         }
       ]
     },
@@ -102,7 +99,6 @@ export class App {
           name: 'productId',
           label: 'Product',
           placeholder: '0x0101',
-          hint: 'Choose the product id to authorize for this terminal.',
           type: 'select',
           options: this.productOptions
         },
@@ -110,14 +106,12 @@ export class App {
           name: 'startTime',
           label: 'Start Time',
           placeholder: '2004-01-15T00:00',
-          hint: 'Authorization begin time. Sent to the API as ISO date/time.',
           type: 'datetime-local'
         },
         {
           name: 'endTime',
           label: 'End Time',
           placeholder: '2004-04-15T23:59',
-          hint: 'Authorization end time. Must be later than start time.',
           type: 'datetime-local'
         }
       ]
@@ -134,7 +128,6 @@ export class App {
           name: 'productId',
           label: 'Product',
           placeholder: '0x0101',
-          hint: 'Choose the product id to delete authorization for.',
           type: 'select',
           options: this.productOptions
         },
@@ -142,14 +135,12 @@ export class App {
           name: 'startTime',
           label: 'Start Time',
           placeholder: '2004-01-15T00:00',
-          hint: 'Original authorization begin time for operator reference.',
           type: 'datetime-local'
         },
         {
           name: 'endTime',
           label: 'End Time',
           placeholder: '2004-04-15T23:59',
-          hint: 'Original authorization end time. HSCAS anti-authorization uses this time as begin and end.',
           type: 'datetime-local'
         }
       ]
@@ -174,7 +165,6 @@ export class App {
           name: 'status',
           label: 'Terminal Status',
           placeholder: '',
-          hint: 'Choose Inactivate (0) or Activate (1).',
           type: 'select',
           options: [
             { value: '0', label: 'Inactivate' },
@@ -192,6 +182,8 @@ export class App {
       fields: [this.cardIdField()]
     }
   ];
+
+  protected readonly menuEndpoints = this.endpoints.filter(endpoint => endpoint.key !== 'SetTerminalStatus');
 
   protected readonly selectedKey = signal<EndpointKey | 'Dashboard'>('Dashboard');
   protected readonly form = signal<Record<string, string>>({
@@ -399,7 +391,6 @@ export class App {
       name: 'cardId',
       label: 'Card ID',
       placeholder: '3120913711',
-      hint: 'Send as a decimal string. The API converts it to HSCAS hex.'
     };
   }
 
