@@ -7,7 +7,7 @@
     </div>
     <button type="button" (click)="load()" [disabled]="loading() || !validCard()">Refresh history</button>
   </header>
-  <p class="note">Newest Created Date first. Successful CAS operations only. Created dates use the database server’s clock; authorization periods use Bangladesh time.</p>
+  <p class="note">Newest Created Date first. Includes failed ValidateCard steps. Created dates use the database server’s clock; authorization periods use Bangladesh time.</p>
   <div aria-live="polite">
     @if (loading()) {
       <p class="state">Loading card history…</p>

@@ -12,7 +12,8 @@ type EndpointKey =
   | 'UnAuthorize'
   | 'ClearAuthorization'
   | 'SetTerminalStatus'
-  | 'QueryAuthorization';
+  | 'QueryAuthorization'
+  | 'ValidateCard';
 
 type FieldName = 'status' | 'cardId' | 'chipId' | 'productId' | 'startTime' | 'endTime';
 type FieldType = 'text' | 'select' | 'datetime-local';
@@ -60,6 +61,17 @@ export class App {
   ];
 
   protected readonly endpoints: EndpointDefinition[] = [
+    {
+      key: 'ValidateCard',
+      label: 'Validate Card',
+      description: 'Validate a card using the required Card ID and 16-character hexadecimal Chip ID.',
+      method: 'POST',
+      path: '/ValidateCard',
+      fields: [
+        this.cardIdField(),
+        { name: 'chipId', label: 'Chip ID', placeholder: '16 hexadecimal characters' }
+      ]
+    },
     {
       key: 'OpenAccount',
       label: 'Open Account',
@@ -188,7 +200,7 @@ export class App {
   protected readonly selectedKey = signal<EndpointKey | 'Dashboard'>('Dashboard');
   protected readonly form = signal<Record<string, string>>({
     cardId: '3120913711',
-    chipId: '123456789',
+    chipId: '',
     status: '0',
     productId: '0x0101',
     startTime: this.formatDateTimeLocal(new Date()),
@@ -251,6 +263,12 @@ export class App {
     if (this.selectedKey() === 'Dashboard') return;
     const endpoint = this.selectedEndpoint();
     const payload = this.buildPayload(endpoint);
+    if (endpoint.key === 'ValidateCard' &&
+        (!String(payload['cardId']).trim() || !/^[0-9a-fA-F]{16}$/.test(String(payload['chipId'])))) {
+      this.response.set(null);
+      this.error.set('Card ID and Chip ID are required. Chip ID must contain exactly 16 hexadecimal characters.');
+      return;
+    }
 
     this.loading.set(true);
     this.response.set(null);
@@ -260,7 +278,7 @@ export class App {
       next: (result: unknown) => {
         this.loading.set(false);
         this.response.set(result);
-        if (this.isRecord(result) && result['success'] === true &&
+        if ((endpoint.key === 'ValidateCard' || (this.isRecord(result) && result['success'] === true)) &&
             String(payload['cardId']).trim() === this.form()['cardId'].trim()) {
           this.historyRefresh.update(value => value + 1);
         }
@@ -270,6 +288,9 @@ export class App {
         this.loading.set(false);
         const message = this.extractErrorMessage(failure);
         this.error.set(message);
+        if (endpoint.key === 'ValidateCard' && String(payload['cardId']).trim() === this.form()['cardId'].trim()) {
+          this.historyRefresh.update(value => value + 1);
+        }
         this.pushActivity(endpoint.label, 'Error', message);
       }
     });
@@ -365,6 +386,7 @@ export class App {
       return 'Command completed';
     }
 
+    if (typeof result['reason'] === 'string') return result['reason'];
     const meaning = result['resultMeaning'];
     const code = result['resultHex'];
     if (typeof meaning === 'string' && typeof code === 'string') {
