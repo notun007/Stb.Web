@@ -7,6 +7,7 @@ import { environment } from '../environments/environment';
 
 type EndpointKey =
   | 'OpenAccount'
+  | 'AddCard'
   | 'CloseAccount'
   | 'Authorize'
   | 'UnAuthorize'
@@ -61,6 +62,17 @@ export class App {
   ];
 
   protected readonly endpoints: EndpointDefinition[] = [
+    {
+      key: 'AddCard',
+      label: 'Add Card',
+      description: 'Clear authorizations, then open the account regardless of the clear result.',
+      method: 'POST',
+      path: '/AddCard',
+      fields: [
+        this.cardIdField(),
+        { name: 'chipId', label: 'Chip ID', placeholder: '16 hexadecimal characters' }
+      ]
+    },
     {
       key: 'ValidateCard',
       label: 'Validate Card',
@@ -263,7 +275,7 @@ export class App {
     if (this.selectedKey() === 'Dashboard') return;
     const endpoint = this.selectedEndpoint();
     const payload = this.buildPayload(endpoint);
-    if (endpoint.key === 'ValidateCard' &&
+    if ((endpoint.key === 'ValidateCard' || endpoint.key === 'AddCard') &&
         (!String(payload['cardId']).trim() || !/^[0-9a-fA-F]{16}$/.test(String(payload['chipId'])))) {
       this.response.set(null);
       this.error.set('Card ID and Chip ID are required. Chip ID must contain exactly 16 hexadecimal characters.');
@@ -278,7 +290,7 @@ export class App {
       next: (result: unknown) => {
         this.loading.set(false);
         this.response.set(result);
-        if ((endpoint.key === 'ValidateCard' || (this.isRecord(result) && result['success'] === true)) &&
+        if ((endpoint.key === 'ValidateCard' || endpoint.key === 'AddCard' || (this.isRecord(result) && result['success'] === true)) &&
             String(payload['cardId']).trim() === this.form()['cardId'].trim()) {
           this.historyRefresh.update(value => value + 1);
         }
@@ -288,7 +300,7 @@ export class App {
         this.loading.set(false);
         const message = this.extractErrorMessage(failure);
         this.error.set(message);
-        if (endpoint.key === 'ValidateCard' && String(payload['cardId']).trim() === this.form()['cardId'].trim()) {
+        if ((endpoint.key === 'ValidateCard' || endpoint.key === 'AddCard') && String(payload['cardId']).trim() === this.form()['cardId'].trim()) {
           this.historyRefresh.update(value => value + 1);
         }
         this.pushActivity(endpoint.label, 'Error', message);
