@@ -40,6 +40,10 @@
           <span class="nav-icon" [attr.data-icon]="endpoint.key" aria-hidden="true">
             <svg viewBox="0 0 24 24" focusable="false">
               @switch (endpoint.key) {
+                @case ('AddCard') {
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="M12 8v8M8 12h8" />
+                }
                 @case ('ValidateCard') {
                   <rect x="3" y="5" width="18" height="14" rx="2" />
                   <path d="m8 12 3 3 5-6" />
@@ -100,7 +104,7 @@
       <article class="metric">
         <span>Endpoints</span>
         <strong>{{ endpoints.length }}</strong>
-        <small>Validate, open, close, authorize, unauthorize, clear, status, query</small>
+        <small>Add, validate, open, close, authorize, unauthorize, clear, status, query</small>
       </article>
       <article class="metric">
         <span>Success</span>
@@ -137,8 +141,8 @@
                   [type]="field.type ?? 'text'"
                   [name]="field.name"
                   [placeholder]="field.placeholder"
-                  [required]="selectedKey() === 'ValidateCard'"
-                  [attr.pattern]="selectedKey() === 'ValidateCard' && field.name === 'chipId' ? '[0-9a-fA-F]{16}' : null"
+                  [required]="selectedKey() === 'ValidateCard' || selectedKey() === 'AddCard'"
+                  [attr.pattern]="(selectedKey() === 'ValidateCard' || selectedKey() === 'AddCard') && field.name === 'chipId' ? '[0-9a-fA-F]{16}' : null"
                   [value]="form()[field.name]"
                   (input)="updateField(field.name, $any($event.target).value)"
                   autocomplete="off"
